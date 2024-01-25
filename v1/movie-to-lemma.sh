@@ -1,9 +1,9 @@
 #!/bin/sh
 set -eux
 
-../bin/gcc6809  -Os -S  --std=gnu99 -I../frobio/ -fwhole-program  tv.c 
-lwasm.orig --obj -o tv.o tv.s --list=tv.list 
-lwlink --decb --entry=_main --map=tv.map --output=tv.cmd tv.o
+../../bin/gcc6809  -Os -S  --std=gnu99 -I../../frobio/ -fwhole-program  tv.c 
+../../bin/lwasm --obj -o tv.o tv.s --list=tv.list 
+../../bin/lwlink --decb --entry=_main --map=tv.map --output=tv.cmd tv.o
 
 cc -o color-crystal color-crystal.c
 ./color-crystal > /tmp/cc
@@ -38,6 +38,3 @@ do
 done
 
 # rm -rf $T color-crystal tv.[abd-z]*
-
-
-# ffmpeg -y -i Teletubbies\ say\ \'Eh-oh\!\'\ 🎵\ Music\ Video\ 🎵-DIDAUViRnAU.mkv  -ac 1 -ar 6144 -c:a libmp3lame -q:a 5 out.mp3
