@@ -396,6 +396,7 @@ void WizWaitStatus(const struct sock* sockp, byte want) {
 
 ////////////////////////////////////////////////
 
+#if 0
 // Only called for TCP Client.
 // Can probably be skipped.
 errnum WizCheck(PARAM_JUST_SOCK) {
@@ -416,13 +417,13 @@ errnum WizRecvGetBytesWaiting(const struct sock* sockp, word* bytes_waiting_out)
   *bytes_waiting_out = WizGet2(B+SK_RX_RSR0);  // Unread Received Size.
   return OKAY;
 }
+#endif
 
 errnum QuickTcpRecv(const struct sock* sockp, char* buf, size_t n) {
-  word bw = WizGet2(B+SK_RX_RSR0);
-  if (bw < n) {
-  	Poke(0xFF9A, 0x04); // Red border.
-  	while (1) DisableInterrupts();
-  }
+  word bytes_waiting;
+  do {
+       bytes_waiting = WizGet2(B+SK_RX_RSR0);
+  } while (bytes_waiting < n);
 
   word rd = WizGet2(B+SK_RX_RD0);
   word begin = rd & RING_MASK; // begin: Beneath RING_SIZE.
@@ -442,6 +443,7 @@ errnum QuickTcpRecv(const struct sock* sockp, char* buf, size_t n) {
   return OKAY;
 }
 
+#if 0
 errnum WizRecvChunkTry(const struct sock* sockp, char* buf, size_t n) {
 #if 0
   word bytes_waiting = 0;
@@ -489,6 +491,7 @@ errnum TcpRecv(const struct sock* sockp, char* p, size_t n) {
   }
   return OKAY;
 }
+#endif
 #endif
 
 ////////////////////////////////////////////////
@@ -740,7 +743,7 @@ void main2(void) {
 
   // TcpRecv(SOCK1_AND  0x7000, 1600);  // preload audio 1/5 second (at 8000 Hz)
 	 {
-	   byte* ap = 0x7000;
+	   byte* ap = (byte*) 0x7000;
 	   for (byte i = 0; i < 16; i ++) {
            	QuickTcpRecv(SOCK1_AND  ap, 100);  // load audio 1/5 second (at 8000 Hz)
 		ap += 100;
@@ -753,7 +756,7 @@ void main2(void) {
   while (1) {
 
 	 {
-	   byte* ap = audio_phase ? 0x7000+1600 : 0x7000;
+	   byte* ap = audio_phase ? (byte*)0x7000+1600 : (byte*)0x7000;
 	   for (byte i = 0; i < 16; i ++) {
            	QuickTcpRecv(SOCK1_AND  ap, 100);  // load audio 1/5 second (at 8000 Hz)
 		ap += 100;
@@ -782,12 +785,12 @@ void main2(void) {
 
 #if 1
 	  if (!audio_phase) {
-	  	byte* x = 0x3000;
+	  	byte* x = (byte*)0x3000;
 	  	while(Peek2(2) < 0x7000+1600) {
 			// *x++ = 0x44;
 		}
 	  } else {
-	  	byte* x = 0x3000;
+	  	byte* x = (byte*)0x3000;
 	  	while(Peek2(2) >= 0x7000+1600) {
 			// *x++ = 0x55;
 		}
